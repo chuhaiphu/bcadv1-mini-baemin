@@ -1,0 +1,141 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Cart {
+  ID        Int         @id @default(autoincrement())
+  USER_ID   Int         @unique(map: "cart_user_id_unique")
+  User      User        @relation(fields: [USER_ID], references: [ID], onDelete: NoAction, onUpdate: NoAction, map: "cart_user_id_foreign")
+  Meal_Cart Meal_Cart[]
+}
+
+model Item_Order {
+  ID         Int     @id @default(autoincrement())
+  MEAL_ID    Int
+  ORDER_ID   Int
+  QUANTITY   Int
+  ITEM_PRICE Decimal @db.Decimal(8, 2)
+  Meal       Meal    @relation(fields: [MEAL_ID], references: [ID], onDelete: NoAction, onUpdate: NoAction, map: "item_order_meal_id_foreign")
+  Order      Order   @relation(fields: [ORDER_ID], references: [ID], onDelete: NoAction, onUpdate: NoAction, map: "item_order_order_id_foreign")
+}
+
+model Meal {
+  ID         Int          @id @default(autoincrement())
+  NAME       String       @db.VarChar(255)
+  IMAGE      Json         @db.Json
+  PRICE      Decimal      @db.Decimal(8, 2)
+  SHOP_ID    Int
+  Item_Order Item_Order[]
+  Shop       Shop         @relation(fields: [SHOP_ID], references: [ID], onDelete: NoAction, onUpdate: NoAction, map: "meal_shop_id_foreign")
+  Meal_Cart  Meal_Cart[]
+}
+
+model Meal_Cart {
+  ID       Int  @id @default(autoincrement())
+  MEAL_ID  Int
+  CART_ID  Int
+  QUANTITY Int
+  Cart     Cart @relation(fields: [CART_ID], references: [ID], onDelete: NoAction, onUpdate: NoAction, map: "meal_cart_cart_id_foreign")
+  Meal     Meal @relation(fields: [MEAL_ID], references: [ID], onDelete: NoAction, onUpdate: NoAction, map: "meal_cart_meal_id_foreign")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model Order {
+  ID            Int             @id @default(autoincrement())
+  STATUS        String          @db.VarChar(255)
+  CREATE_AT     DateTime        @db.Timestamp(0)
+  USER_ID       Int
+  Item_Order    Item_Order[]
+  User          User            @relation(fields: [USER_ID], references: [ID], onDelete: NoAction, onUpdate: NoAction, map: "order_user_id_foreign")
+  Payment       Payment[]
+  Shipping      Shipping?
+  Voucher_Order Voucher_Order[]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model Payment {
+  ID        Int      @id @default(autoincrement())
+  METHOD    String   @db.VarChar(255)
+  AMOUNT    Int
+  CREATE_AT DateTime @db.Timestamp(0)
+  ORDER_ID  Int
+  Order     Order    @relation(fields: [ORDER_ID], references: [ID], onDelete: NoAction, onUpdate: NoAction, map: "payment_order_id_foreign")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model Review {
+  ID        Int      @id @default(autoincrement())
+  CONTENT   String?  @db.VarChar(255)
+  RATINGS   String   @db.VarChar(255)
+  CREATE_AT DateTime @db.Timestamp(0)
+  SHOP_ID   Int
+  USER_ID   Int
+  Shop      Shop     @relation(fields: [SHOP_ID], references: [ID], onDelete: NoAction, onUpdate: NoAction, map: "review_shop_id_foreign")
+  User      User     @relation(fields: [USER_ID], references: [ID], onDelete: NoAction, onUpdate: NoAction, map: "review_user_id_foreign")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model Shipping {
+  ID            Int    @id @default(autoincrement())
+  DRIVER_NAME   String @db.VarChar(255)
+  CUSTOMER_NAME String @db.VarChar(255)
+  PHONE         String @db.VarChar(255)
+  ADDRESS       String @db.VarChar(255)
+  STATUS        String @db.VarChar(255)
+  ORDER_ID      Int    @unique(map: "shipping_order_id_unique")
+  Order         Order  @relation(fields: [ORDER_ID], references: [ID], onDelete: NoAction, onUpdate: NoAction, map: "shipping_order_id_foreign")
+}
+
+model Shop {
+  ID         Int      @id @default(autoincrement())
+  NAME       String   @db.VarChar(255)
+  ADDRESS    String   @db.VarChar(255)
+  OPEN_TIME  DateTime @db.Time(0)
+  CLOSE_TIME DateTime @db.Time(0)
+  IS_ENABLE  Boolean
+  Meal       Meal[]
+  Review     Review[]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model Voucher {
+  ID                  Int             @id @default(autoincrement())
+  CONTENT             String          @db.VarChar(255)
+  CODE                String          @unique(map: "voucher_code_unique") @db.VarChar(255)
+  DISCOUNT_TYPE       String          @db.VarChar(255)
+  MIN_ORDER_VALUE     Decimal         @db.Decimal(8, 2)
+  MAX_DISCOUNT_AMOUNT Decimal         @db.Decimal(8, 2)
+  START_DATE          DateTime        @db.Timestamp(0)
+  END_DATE            DateTime        @db.Timestamp(0)
+  USAGE_LIMIT         Int
+  Voucher_Order       Voucher_Order[]
+}
+
+model Voucher_Order {
+  ID         Int     @id @default(autoincrement())
+  ORDER_ID   Int
+  VOUCHER_ID Int
+  Order      Order   @relation(fields: [ORDER_ID], references: [ID], onDelete: NoAction, onUpdate: NoAction, map: "voucher_order_order_id_foreign")
+  Voucher    Voucher @relation(fields: [VOUCHER_ID], references: [ID], onDelete: NoAction, onUpdate: NoAction, map: "voucher_order_voucher_id_foreign")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model User {
+  ID                 Int      @id @default(autoincrement())
+  EMAIL              String   @unique(map: "user_email_unique") @db.VarChar(255)
+  PASSWORD           String   @db.VarChar(255)
+  FULLNAME           String?  @db.VarChar(255)
+  PHONE              String?  @unique(map: "user_phone_unique") @db.VarChar(255)
+  ADDRESS            String?  @db.VarChar(255)
+  ROLE               String   @db.VarChar(255)
+  REFRESH_TOKEN      String?  @db.VarChar(255)
+  VERIFICATION_TOKEN String?  @db.VarChar(255)
+  Cart               Cart?
+  Order              Order[]
+  Review             Review[]
+}
