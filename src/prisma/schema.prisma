@@ -48,8 +48,10 @@ model Meal_Cart {
 model Order {
   ID            Int             @id @default(autoincrement())
   STATUS        String          @db.VarChar(255)
-  CREATE_AT     DateTime        @db.Timestamp(0)
+  CREATE_AT     DateTime        @default(now()) @db.Timestamptz(0)
+  UPDATE_AT     DateTime?       @db.Timestamptz(0)
   USER_ID       Int
+  TOTAL         Decimal?        @db.Decimal(8, 2)
   Item_Order    Item_Order[]
   User          User            @relation(fields: [USER_ID], references: [ID], onDelete: NoAction, onUpdate: NoAction, map: "order_user_id_foreign")
   Payment       Payment[]
@@ -62,21 +64,22 @@ model Payment {
   ID        Int      @id @default(autoincrement())
   METHOD    String   @db.VarChar(255)
   AMOUNT    Int
-  CREATE_AT DateTime @db.Timestamp(0)
+  CREATE_AT DateTime @default(now()) @db.Timestamptz(0)
   ORDER_ID  Int
   Order     Order    @relation(fields: [ORDER_ID], references: [ID], onDelete: NoAction, onUpdate: NoAction, map: "payment_order_id_foreign")
 }
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model Review {
-  ID        Int      @id @default(autoincrement())
-  CONTENT   String?  @db.VarChar(255)
-  RATINGS   String   @db.VarChar(255)
-  CREATE_AT DateTime @db.Timestamp(0)
+  ID        Int       @id @default(autoincrement())
+  CONTENT   String?   @db.VarChar(255)
+  RATINGS   String    @db.VarChar(255)
+  CREATE_AT DateTime  @default(now()) @db.Timestamptz(0)
+  UPDATE_AT DateTime? @db.Timestamptz(0)
   SHOP_ID   Int
   USER_ID   Int
-  Shop      Shop     @relation(fields: [SHOP_ID], references: [ID], onDelete: NoAction, onUpdate: NoAction, map: "review_shop_id_foreign")
-  User      User     @relation(fields: [USER_ID], references: [ID], onDelete: NoAction, onUpdate: NoAction, map: "review_user_id_foreign")
+  Shop      Shop      @relation(fields: [SHOP_ID], references: [ID], onDelete: NoAction, onUpdate: NoAction, map: "review_shop_id_foreign")
+  User      User      @relation(fields: [USER_ID], references: [ID], onDelete: NoAction, onUpdate: NoAction, map: "review_user_id_foreign")
 }
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
@@ -104,16 +107,16 @@ model Shop {
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model Voucher {
-  ID                  Int             @id @default(autoincrement())
-  CONTENT             String          @db.VarChar(255)
-  CODE                String          @unique(map: "voucher_code_unique") @db.VarChar(255)
-  DISCOUNT_TYPE       String          @db.VarChar(255)
-  MIN_ORDER_VALUE     Decimal         @db.Decimal(8, 2)
-  MAX_DISCOUNT_AMOUNT Decimal         @db.Decimal(8, 2)
-  START_DATE          DateTime        @db.Timestamp(0)
-  END_DATE            DateTime        @db.Timestamp(0)
-  USAGE_LIMIT         Int
-  Voucher_Order       Voucher_Order[]
+  ID              Int             @id @default(autoincrement())
+  CONTENT         String          @db.VarChar(255)
+  CODE            String          @unique(map: "voucher_code_unique") @db.VarChar(255)
+  DISCOUNT_TYPE   String          @db.VarChar(255)
+  MIN_ORDER_VALUE Decimal         @db.Decimal(8, 2)
+  DISCOUNT_AMOUNT Decimal         @db.Decimal(8, 2)
+  START_DATE      DateTime        @db.Timestamp(0)
+  END_DATE        DateTime        @db.Timestamp(0)
+  USAGE_LIMIT     Int
+  Voucher_Order   Voucher_Order[]
 }
 
 model Voucher_Order {

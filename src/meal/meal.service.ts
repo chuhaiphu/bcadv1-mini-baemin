@@ -64,4 +64,51 @@ export class MealService {
       where: { ID: id },
     })
   }
+
+  async addMealToUserCart(userId: number, mealId: number, quantity: number) {
+    const meal = await this.prisma.meal.findUnique({ where: { ID: mealId } })
+    if (!meal) {
+      throw new NotFoundException(`Meal with ID ${mealId} not found`)
+    }
+
+    const user = await this.prisma.user.findUnique({
+      where: { ID: userId },
+      include: { Cart: true }
+    });
+  
+    if (!user || !user.Cart) {
+      throw new NotFoundException(`User with ID ${userId} not found or has no cart`)
+    }
+
+    return this.prisma.meal_Cart.create({
+      data: {
+        MEAL_ID: mealId,
+        CART_ID: user.Cart.ID,
+        QUANTITY: quantity
+      }
+    })
+  }
+
+  async removeMealFromCart(mealCartId: number) {
+    const mealCart = await this.prisma.meal_Cart.findUnique({ where: { ID: mealCartId } })
+    if (!mealCart) {
+      throw new NotFoundException(`Meal_Cart with ID ${mealCartId} not found`)
+    }
+
+    return this.prisma.meal_Cart.delete({
+      where: { ID: mealCartId }
+    })
+  }
+
+  async updateMealCartQuantity(mealCartId: number, quantity: number) {
+    const mealCart = await this.prisma.meal_Cart.findUnique({ where: { ID: mealCartId } })
+    if (!mealCart) {
+      throw new NotFoundException(`Meal_Cart with ID ${mealCartId} not found`)
+    }
+
+    return this.prisma.meal_Cart.update({
+      where: { ID: mealCartId },
+      data: { QUANTITY: quantity }
+    })
+  }
 }

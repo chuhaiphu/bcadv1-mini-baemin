@@ -13,6 +13,13 @@ export class PrismaExceptionFilter implements ExceptionFilter {
           message: 'Record not found',
         })
         break
+      case 'P2002':
+        response.status(HttpStatus.CONFLICT).json({
+          statusCode: HttpStatus.CONFLICT,
+          message: 'Unique constraint violation',
+          fields: (exception.meta as { target: string[] }).target,
+        })
+        break
       // Add more cases for other Prisma error codes as needed
       default:
         response.status(HttpStatus.BAD_REQUEST).json({
