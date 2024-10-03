@@ -9,9 +9,11 @@ import { MealModule } from './meal/meal.module';
 import { ReviewModule } from './review/review.module';
 import { VoucherModule } from './voucher/voucher.module';
 import { OrderModule } from './order/order.module';
+import { PaymentModule } from './payment/payment.module';
+import { ShippingModule } from './shipping/shipping.module';
 
 @Module({
-  imports: [ConfigModule.forRoot({ isGlobal: true }), AuthModule, UserModule, ShopModule, MealModule, ReviewModule, VoucherModule, OrderModule],
+  imports: [ConfigModule.forRoot({ isGlobal: true }), AuthModule, UserModule, ShopModule, MealModule, ReviewModule, VoucherModule, OrderModule, PaymentModule, ShippingModule],
   controllers: [AppController],
   providers: [AppService],
 })
